@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Workout Program Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      color-scheme: dark;
+      --bg: #020617;
+      --bg-elevated: #020617;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.16);
+      --border-subtle: #1f2937;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --danger: #f97373;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #111827 0, #020617 40%, #000 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 960px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    header {
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #020617, #020617);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    header span {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .chip {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .top-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    @media (min-width: 720px) {
+      .top-bar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .segmented {
+      display: inline-flex;
+      padding: 2px;
+      border-radius: 999px;
+      border: 1px solid rgba(31, 41, 55, 0.85);
+      background: rgba(15, 23, 42, 0.95);
+      gap: 2px;
+      overflow-x: auto;
+    }
+
+    .segmented button {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .segmented button.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 0 0 1px rgba(191, 219, 254, 0.4);
+    }
+
+    .segmented button:active {
+      transform: translateY(1px);
+    }
+
+    .main-card {
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--border-subtle);
+      padding: 10px;
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.8);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .card-header-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .card-header-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .card-header-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .ex-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .ex-row {
+      border-radius: 12px;
+      padding: 6px 7px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 65%),
+        radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.18), transparent 60%),
+        #020617;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .ex-title-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .ex-name {
+      font-size: 0.86rem;
+      font-weight: 500;
+    }
+
+    .ex-scheme {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .ex-inputs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      flex: 1;
+      min-width: 40%;
+    }
+
+    .field label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      border-radius: 10px;
+      border: 1px solid #111827;
+      background: #020617;
+      color: var(--text-main);
+      padding: 5px 8px;
+      font-size: 0.8rem;
+      outline: none;
+      width: 100%;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-soft);
+    }
+
+    select {
+      padding-right: 18px;
+    }
+
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .small-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .small-btn:active {
+      transform: translateY(1px);
+    }
+
+    .info-text {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .pill-done {
+      color: #bbf7d0;
+      border-color: rgba(52, 211, 153, 0.65);
+      background: rgba(6, 95, 70, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Workout Program Tracker</h1>
+        <span>Fixed 4-day split • 4-week block • Local only</span>
+      </div>
+      <span id="lastSaved" class="chip">Not saved yet</span>
+    </header>
+
+    <div class="top-bar">
+      <!-- Day selector -->
+      <div class="segmented" id="daySelector">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Week selector -->
+      <div class="segmented" id="weekSelector">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+    <main class="main-card">
+      <div class="card-header">
+        <div class="card-header-main">
+          <div class="card-header-title" id="currentDayLabel"></div>
+          <div class="card-header-sub" id="currentWeekLabel"></div>
+        </div>
+        <div class="badge" id="summaryBadge">Week 1 • 0 done</div>
+      </div>
+
+      <section id="exerciseList" class="ex-list">
+        <!-- Exercises go here -->
+      </section>
+
+      <div class="footer-row">
+        <button id="clearWeekBtn" class="small-btn" type="button">
+          ⛔ Clear this week for this day
+        </button>
+        <span class="info-text">
+          Changes auto-save as you type. Add this page to your iPhone Home Screen for app-like use.
+        </span>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // --- Program definition (from your Excel) ---
+
+    const PROGRAM = {
+      "Tuesday - Push": [
+        { name: "Incline Dumbbell Press", scheme: "3x12" },
+        { name: "Machine Chest Fly", scheme: "3x12" },
+        { name: "Hammer Strength Incline Press", scheme: "3x12" },
+        { name: "Hammer Strength Shoulder Press", scheme: "3x12" },
+        { name: "Tricep Rope Pushdowns", scheme: "3x12" },
+        { name: "Steated Tricep Extensions", scheme: "3x12" },
+        { name: "Assisted Dips", scheme: "3xFailure" },
+        { name: "Deadbugs", scheme: "2x12" },
+        { name: "Stomach Vacuum", scheme: "2x20 sec" },
+      ],
+
+      "Wednesday - Pull": [
+        { name: "Lat Pull Across", scheme: "3x12" },
+        { name: "Dumbbell Row", scheme: "3x12" },
+        { name: "Rear Delt Fly", scheme: "3x12" },
+        { name: "Preacher Curl", scheme: "3x12" },
+        { name: "Cable Curl", scheme: "3x12" },
+        { name: "Hanging Knee Raises", scheme: "3x12" },
+        { name: "Reverse Crunch", scheme: "3x12" },
+      ],
+
+      "Thursday - Legs": [
+        { name: "Goblet Squats", scheme: "3x12" },
+        { name: "Leg Press", scheme: "3x12" },
+        { name: "Hamstring Curl", scheme: "3x12" },
+        { name: "Calf Press", scheme: "3x15" },
+        { name: "Leg Extension", scheme: "3x12" },
+        { name: "Hip Adductor", scheme: "3x12" },
+        { name: "Stomach Vacuums", scheme: "3x20 sec" },
+        { name: "Plank", scheme: "1 min" },
+      ],
+
+      "Friday - CoreCardio": [
+        { name: "Deadbugs", scheme: "3x12" },
+        { name: "Reverse Crunch", scheme: "3x12" },
+        { name: "Hanging Knee Raises", scheme: "3x12" },
+        { name: "Stomach Vacuums", scheme: "3x20 sec" },
+        { name: "Torso Rotations", scheme: "3x12" },
+        { name: "Plank", scheme: "1 min" },
+        { name: "Face Pulls", scheme: "3x12" },
+        { name: "Row Machine", scheme: "9 min" },
+      ],
+    };
+
+    const DAYS = Object.keys(PROGRAM);
+    const WEEKS = [1, 2, 3, 4];
+    const STORAGE_KEY = "fixedProgramTracker_v1";
+
+    const daySelector = document.getElementById("daySelector");
+    const weekSelector = document.getElementById("weekSelector");
+    const currentDayLabel = document.getElementById("currentDayLabel");
+    const currentWeekLabel = document.getElementById("currentWeekLabel");
+    const exerciseList = document.getElementById("exerciseList");
+    const summaryBadge = document.getElementById("summaryBadge");
+    const lastSaved = document.getElementById("lastSaved");
+    const clearWeekBtn = document.getElementById("clearWeekBtn");
+
+    let state = {
+      currentDay: DAYS[0],
+      currentWeek: 1,
+      data: loadData(),
+    };
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        console.error("Failed to parse stored data", e);
+        return {};
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.data));
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      lastSaved.textContent = "Saved " + timeStr;
+    }
+
+    function getEntry(day, week, index) {
+      const d = state.data[day]?.[week]?.[index];
+      return d || { weight: "", status: "" };
+    }
+
+    function setEntry(day, week, index, payload) {
+      if (!state.data[day]) state.data[day] = {};
+      if (!state.data[day][week]) state.data[day][week] = {};
+      state.data[day][week][index] = payload;
+      saveData();
+      renderSummary();
+    }
+
+    function clearWeek(day, week) {
+      if (!state.data[day]) return;
+      if (!state.data[day][week]) return;
+      delete state.data[day][week];
+      saveData();
+      renderExercises();
+      renderSummary();
+    }
+
+    function renderDaySelector() {
+      daySelector.innerHTML = "";
+      DAYS.forEach((day) => {
+        const btn = document.createElement("button");
+        btn.textContent = day.replace(" - ", " – ");
+        if (day === state.currentDay) btn.classList.add("active");
+        btn.addEventListener("click", () => {
+          state.currentDay = day;
+          document.querySelectorAll("#daySelector button").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          renderMain();
+        });
+        daySelector.appendChild(btn);
+      });
+    }
+
+    function renderWeekSelector() {
+      weekSelector.innerHTML = "";
+      WEEKS.forEach((w) => {
+        const btn = document.createElement("button");
+        btn.textContent = "Week " + w;
+        if (w === state.currentWeek) btn.classList.add("active");
+        btn.addEventListener("click", () => {
+          state.currentWeek = w;
+          document.querySelectorAll("#weekSelector button").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          renderMain();
+        });
+        weekSelector.appendChild(btn);
+      });
+    }
+
+    function renderHeaderTexts() {
+      currentDayLabel.textContent = state.currentDay;
+      currentWeekLabel.textContent = `Logging weights for Week ${state.currentWeek}`;
+    }
+
+    function renderExercises() {
+      exerciseList.innerHTML = "";
+      const day = state.currentDay;
+      const week = state.currentWeek;
+      const exercises = PROGRAM[day] || [];
+
+      exercises.forEach((ex, index) => {
+        const row = document.createElement("div");
+        row.className = "ex-row";
+
+        const titleLine = document.createElement("div");
+        titleLine.className = "ex-title-line";
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "ex-name";
+        nameSpan.textContent = ex.name;
+
+        const schemeSpan = document.createElement("span");
+        schemeSpan.className = "ex-scheme";
+        schemeSpan.textContent = ex.scheme;
+
+        titleLine.appendChild(nameSpan);
+        titleLine.appendChild(schemeSpan);
+
+        const inputs = document.createElement("div");
+        inputs.className = "ex-inputs";
+
+        const weightField = document.createElement("div");
+        weightField.className = "field";
+        const weightLabel = document.createElement("label");
+        weightLabel.textContent = "Weight";
+        const weightInput = document.createElement("input");
+        weightInput.type = "text";
+        weightInput.placeholder = "e.g. 185 lb";
+        weightInput.autocomplete = "off";
+
+        const statusField = document.createElement("div");
+        statusField.className = "field";
+        const statusLabel = document.createElement("label");
+        statusLabel.textContent = "Status";
+        const statusSelect = document.createElement("select");
+
+        const options = ["", "Completed", "PR", "Struggled", "Skipped"];
+        options.forEach((opt) => {
+          const o = document.createElement("option");
+          o.value = opt;
+          o.textContent = opt || "— Select —";
+          statusSelect.appendChild(o);
+        });
+
+        const existing = getEntry(day, week, index);
+        weightInput.value = existing.weight || "";
+        statusSelect.value = existing.status || "";
+
+        weightInput.addEventListener("input", () => {
+          setEntry(day, week, index, {
+            weight: weightInput.value,
+            status: statusSelect.value,
+          });
+        });
+
+        statusSelect.addEventListener("change", () => {
+          setEntry(day, week, index, {
+            weight: weightInput.value,
+            status: statusSelect.value,
+          });
+        });
+
+        weightField.appendChild(weightLabel);
+        weightField.appendChild(weightInput);
+
+        statusField.appendChild(statusLabel);
+        statusField.appendChild(statusSelect);
+
+        inputs.appendChild(weightField);
+        inputs.appendChild(statusField);
+
+        row.appendChild(titleLine);
+        row.appendChild(inputs);
+
+        exerciseList.appendChild(row);
+      });
+    }
+
+    function renderSummary() {
+      const day = state.currentDay;
+      const week = state.currentWeek;
+      const exercises = PROGRAM[day] || [];
+      const total = exercises.length;
+
+      let done = 0;
+      if (state.data[day]?.[week]) {
+        done = Object.values(state.data[day][week]).filter((entry) => {
+          return entry && entry.status && entry.status !== "Skipped";
+        }).length;
+      }
+
+      summaryBadge.textContent = `Week ${week} • ${done}/${total} logged`;
+      if (done === total && total > 0) {
+        summaryBadge.classList.add("pill-done");
+      } else {
+        summaryBadge.classList.remove("pill-done");
+      }
+    }
+
+    function renderMain() {
+      renderHeaderTexts();
+      renderExercises();
+      renderSummary();
+    }
+
+    clearWeekBtn.addEventListener("click", () => {
+      const day = state.currentDay;
+      const week = state.currentWeek;
+      const ok = confirm(`Clear all weights/statuses for ${day}, Week ${week}?`);
+      if (!ok) return;
+      clearWeek(day, week);
+    });
+
+    // Init
+    (function init() {
+      renderDaySelector();
+      renderWeekSelector();
+      renderMain();
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        lastSaved.textContent = "Loaded from local storage";
+      }
+    })();
+  </script>
+</body>
+</html>
